@@ -1,9 +1,9 @@
-// import { localAxios } from "@/util/http-commons";
+import { localAxios } from "@/util/http-commons";
 
-// const local = localAxios();
+const local = localAxios();
 
-// function listSido(success, fail) {
-//   local.get(`/map/sido`).then(success).catch(fail);
-// }
+function listSido(success, fail) {
+  local.get(`/map/sido`).then(success).catch(fail);
+}
 
-// export { listSido };
+export { listSido };
