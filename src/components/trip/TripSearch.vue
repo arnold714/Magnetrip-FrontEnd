@@ -60,7 +60,7 @@ const getAttractionList = () => {
   listAttraction(
     param.value,
     ({ data }) => {
-      attractions.value = data.attraction;
+      attractions.value = data.attractions;
       currentPage.value = data.currentPage;
       totalPage.value = data.totalPageCount;
     },
@@ -127,62 +127,19 @@ const getAttractionList = () => {
         인기<span class="festival-title-light">여행지 알려드릴게요!</span>
       </h2>
       <div class="temple-container">
-      <article class="temple-card">
-        <img
-          loading="lazy"
-          src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/10acaf58fa3d3c1f9c252866c08a488ea3251fc1885b258ec84cba9bcef722ef?apiKey=29b55af8a06640f6ab071ae22829d009&"
-          class="temple-image"
-          alt="해인사 사찰 전경"
-        />
-        <h2 class="temple-name">해인사(합천)</h2>
-        <p class="temple-location">경남 합천군</p>
-        <p class="temple-tags">#휴식하기좋은곳#전통사찰</p>
+      <article class="temple-card" 
+      v-for="attraction in attractions"
+      :key="attraction.contentId">
+      <img
+        loading="lazy"
+        :src="attraction.firstImage1"
+        class="temple-image"
+        alt="이미지 없음"
+      />
+        <h2 class="temple-name">{{attraction.title}}</h2>
+        <p class="temple-tags">{{ attraction.contentTypeName }}</p>
+        <p class="temple-location">{{ attraction.sidoName }} {{ attraction.gugunName }}</p>
       </article>
-      <article class="temple-card">
-        <img
-          loading="lazy"
-          src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/10acaf58fa3d3c1f9c252866c08a488ea3251fc1885b258ec84cba9bcef722ef?apiKey=29b55af8a06640f6ab071ae22829d009&"
-          class="temple-image"
-          alt="해인사 사찰 전경"
-        />
-        <h2 class="temple-name">해인사(합천)</h2>
-        <p class="temple-location">경남 합천군</p>
-        <p class="temple-tags">#휴식하기좋은곳#전통사찰</p>
-      </article>
-      <article class="temple-card">
-        <img
-          loading="lazy"
-          src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/10acaf58fa3d3c1f9c252866c08a488ea3251fc1885b258ec84cba9bcef722ef?apiKey=29b55af8a06640f6ab071ae22829d009&"
-          class="temple-image"
-          alt="해인사 사찰 전경"
-        />
-        <h2 class="temple-name">해인사(합천)</h2>
-        <p class="temple-location">경남 합천군</p>
-        <p class="temple-tags">#휴식하기좋은곳#전통사찰</p>
-      </article>
-      <article class="temple-card">
-        <img
-          loading="lazy"
-          src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/10acaf58fa3d3c1f9c252866c08a488ea3251fc1885b258ec84cba9bcef722ef?apiKey=29b55af8a06640f6ab071ae22829d009&"
-          class="temple-image"
-          alt="해인사 사찰 전경"
-        />
-        <h2 class="temple-name">해인사(합천)</h2>
-        <p class="temple-location">경남 합천군</p>
-        <p class="temple-tags">#휴식하기좋은곳#전통사찰</p>
-      </article>
-      <article class="temple-card">
-        <img
-          loading="lazy"
-          src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/10acaf58fa3d3c1f9c252866c08a488ea3251fc1885b258ec84cba9bcef722ef?apiKey=29b55af8a06640f6ab071ae22829d009&"
-          class="temple-image"
-          alt="해인사 사찰 전경"
-        />
-        <h2 class="temple-name">해인사(합천)</h2>
-        <p class="temple-location">경남 합천군</p>
-        <p class="temple-tags">#휴식하기좋은곳#전통사찰</p>
-      </article>
-
   </div>
     </body>
 
@@ -192,59 +149,55 @@ const getAttractionList = () => {
 .temple-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px; /* 카드들 사이의 간격 */
-  padding: 0 360px; /* 좌우 padding */
-  margin: 20px 0; /* 상하 간격 */
-  justify-content: space-between;
-  box-sizing: border-box; /* padding 포함된 너비 계산 */
+  gap: 55px; /* 요소 간의 간격 */
+  padding: 0 360px;
+  margin: 20px 0;
+  justify-content: flex-start; /* 양 끝에 요소 배치 */
+  box-sizing: border-box;
 }
+
 .temple-card {
-  flex: 1 1 calc(25% - 20px); /* 카드 너비를 30%로 설정 */
-  max-width: 280px; /* 카드의 최대 크기를 280px로 증가 */
+  width: 250px; /* 고정 너비 */
+  height: 350px; /* 고정 높이 */
   border-radius: 5px;
   background: #fff;
   box-shadow: 0 8px 24px rgba(149, 157, 165, 0.2);
   display: flex;
-  padding: 0 0 20px; /* 카드 내부 아래 여백 증가 */
   flex-direction: column;
-  overflow: hidden;
   align-items: center;
-  font-family: 'Noto Sans KR', sans-serif;
-  color: #666;
+  justify-content: space-between; /* 상하 균등 정렬 */
+  overflow: hidden; /* 내용이 넘칠 경우 숨김 */
   text-align: center;
 }
 
+
 .temple-image {
-  aspect-ratio: 1;
-  object-fit: contain;
-  object-position: center;
-  width: 100%;
-  align-self: stretch;
+  width: 100%; /* 카드의 너비에 맞춤 */
+  height: 200px; /* 고정된 높이 설정 */
+  object-fit: cover; /* 이미지를 비율 유지하며 카드에 맞게 자름 */
+  object-position: center; /* 중앙 기준으로 잘라냄 */
+  border-top-left-radius: 5px; /* 카드의 둥근 모서리에 맞춤 */
+  border-top-right-radius: 5px; /* 카드의 둥근 모서리에 맞춤 */
+  overflow: hidden; /* 초과 이미지를 숨김 */
 }
+
 
 .temple-name {
   color: #333;
   font-size: 18px;
   font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.6px;
-  margin: 15px 0 0;
-}
-
-.temple-location {
-  font-size: 15px;
-  font-weight: 350;
-  line-height: 1;
-  letter-spacing: -0.5px;
-  margin: 8px 0 0;
+  line-height: 1; /* 줄 간격 조정 */
+  margin: 0; /* 위아래 여백 완전히 제거 */
 }
 
 .temple-tags {
   font-size: 14px;
   font-weight: 300;
-  line-height: 1;
-  margin: 19px 0 0;
+  line-height: 1; /* 줄 간격 조정 */
+  margin: 0; /* 위아래 여백 완전히 제거 */
 }
+
+
 .festival-header {
   margin: 0;
   padding: 0;
