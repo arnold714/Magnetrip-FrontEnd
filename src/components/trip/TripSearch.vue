@@ -1,10 +1,23 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import { listSido, listTheme } from "@/api/sido"
+import { listAttraction } from "@/api/attraction"
 
 const sidoList = ref([])
 const themeList = ref([])
-const key = ref(""); // 기본값을 ""로 설정 (전국 선택)
+const attractions = ref([])
+
+const currentPage = ref(1);
+const totalPage = ref(0);
+const { VITE_ARTICLE_LIST_SIZE } = import.meta.env;
+
+const param = ref({
+  pgno: currentPage.value,
+  spp: VITE_ARTICLE_LIST_SIZE,
+  word: "",
+  area: "",
+  theme: "",
+});
 
 onMounted(() => {
   getSidoList(),
@@ -41,6 +54,27 @@ const getThemeList = () => {
     }
   )
 }
+
+const getAttractionList = () => {
+  console.log("서버에서 여행지 얻어오자!!!", param.value);
+  listAttraction(
+    param.value,
+    ({ data }) => {
+      attractions.value = data.attraction;
+      currentPage.value = data.currentPage;
+      totalPage.value = data.totalPageCount;
+    },
+    (error) => {
+      console.log(error);
+    }
+  );
+};
+// const onPageChange = (val) => {
+//   console.log(val + "번 페이지로 이동 준비 끝!!!");
+//   currentPage.value = val;
+//   param.value.pgno = val;
+//   getAttractionList();
+// };
 </script>
 
 <template>
@@ -61,11 +95,11 @@ const getThemeList = () => {
           <div class="input-bar">
             <img loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/b9c4996508e9df80e700218c91f0943d8b46dddf92c715c022fa07150b7da06a?apiKey=29b55af8a06640f6ab071ae22829d009&" class="search-icon" alt="Search icon" />
             <label for="searchInput" class="visually-hidden">검색어를 입력하세요</label>
-            <input type="text" id="searchInput" class="search-input" placeholder="검색어를 입력하세요" />
+            <input type="text" v-model="param.word" id="searchInput" class="search-input" placeholder="검색어를 입력하세요" />
           </div>
           <div class="select-bar">
             <label for="citySelect" class="visually-hidden" >시를 선택하세요</label>
-            <select id="citySelect" class="search-select" v-model="key">
+            <select id="citySelect" class="search-select" v-model="param.area">
               <option v-for="option in sidoList"
               :key="option.value"
               :value="option.value">
@@ -75,7 +109,7 @@ const getThemeList = () => {
           </div>
           <div class="select-bar">
             <label for="themeSelect" class="visually-hidden">테마를 선택하세요</label>
-            <select id="themeSelect" class="search-select">
+            <select id="themeSelect" class="search-select" v-model="param.theme">
               <option v-for="option in themeList"
               :key="option.value"
               :value="option.value">
@@ -83,21 +117,154 @@ const getThemeList = () => {
               </option>
             </select>
           </div>
-          <button type="submit" class="search-button">검색</button>
+          <button type="button" class="search-button" @click="getAttractionList">검색</button>
         </form>
       </section>
     </div>
   </header>
+  <body class="festival-header">
+      <h2 class="festival-title">
+        인기<span class="festival-title-light">여행지 알려드릴게요!</span>
+      </h2>
+      <div class="temple-container">
+      <article class="temple-card">
+        <img
+          loading="lazy"
+          src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/10acaf58fa3d3c1f9c252866c08a488ea3251fc1885b258ec84cba9bcef722ef?apiKey=29b55af8a06640f6ab071ae22829d009&"
+          class="temple-image"
+          alt="해인사 사찰 전경"
+        />
+        <h2 class="temple-name">해인사(합천)</h2>
+        <p class="temple-location">경남 합천군</p>
+        <p class="temple-tags">#휴식하기좋은곳#전통사찰</p>
+      </article>
+      <article class="temple-card">
+        <img
+          loading="lazy"
+          src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/10acaf58fa3d3c1f9c252866c08a488ea3251fc1885b258ec84cba9bcef722ef?apiKey=29b55af8a06640f6ab071ae22829d009&"
+          class="temple-image"
+          alt="해인사 사찰 전경"
+        />
+        <h2 class="temple-name">해인사(합천)</h2>
+        <p class="temple-location">경남 합천군</p>
+        <p class="temple-tags">#휴식하기좋은곳#전통사찰</p>
+      </article>
+      <article class="temple-card">
+        <img
+          loading="lazy"
+          src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/10acaf58fa3d3c1f9c252866c08a488ea3251fc1885b258ec84cba9bcef722ef?apiKey=29b55af8a06640f6ab071ae22829d009&"
+          class="temple-image"
+          alt="해인사 사찰 전경"
+        />
+        <h2 class="temple-name">해인사(합천)</h2>
+        <p class="temple-location">경남 합천군</p>
+        <p class="temple-tags">#휴식하기좋은곳#전통사찰</p>
+      </article>
+      <article class="temple-card">
+        <img
+          loading="lazy"
+          src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/10acaf58fa3d3c1f9c252866c08a488ea3251fc1885b258ec84cba9bcef722ef?apiKey=29b55af8a06640f6ab071ae22829d009&"
+          class="temple-image"
+          alt="해인사 사찰 전경"
+        />
+        <h2 class="temple-name">해인사(합천)</h2>
+        <p class="temple-location">경남 합천군</p>
+        <p class="temple-tags">#휴식하기좋은곳#전통사찰</p>
+      </article>
+      <article class="temple-card">
+        <img
+          loading="lazy"
+          src="https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/10acaf58fa3d3c1f9c252866c08a488ea3251fc1885b258ec84cba9bcef722ef?apiKey=29b55af8a06640f6ab071ae22829d009&"
+          class="temple-image"
+          alt="해인사 사찰 전경"
+        />
+        <h2 class="temple-name">해인사(합천)</h2>
+        <p class="temple-location">경남 합천군</p>
+        <p class="temple-tags">#휴식하기좋은곳#전통사찰</p>
+      </article>
+
+  </div>
+    </body>
 
 </template>
 
 <style scoped>
+.temple-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* 카드들 사이의 간격 */
+  padding: 0 360px; /* 좌우 padding */
+  margin: 20px 0; /* 상하 간격 */
+  justify-content: space-between;
+  box-sizing: border-box; /* padding 포함된 너비 계산 */
+}
+.temple-card {
+  flex: 1 1 calc(25% - 20px); /* 카드 너비를 30%로 설정 */
+  max-width: 280px; /* 카드의 최대 크기를 280px로 증가 */
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(149, 157, 165, 0.2);
+  display: flex;
+  padding: 0 0 20px; /* 카드 내부 아래 여백 증가 */
+  flex-direction: column;
+  overflow: hidden;
+  align-items: center;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: #666;
+  text-align: center;
+}
+
+.temple-image {
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
+  align-self: stretch;
+}
+
+.temple-name {
+  color: #333;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.6px;
+  margin: 15px 0 0;
+}
+
+.temple-location {
+  font-size: 15px;
+  font-weight: 350;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  margin: 8px 0 0;
+}
+
+.temple-tags {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1;
+  margin: 19px 0 0;
+}
+.festival-header {
+  margin: 0;
+  padding: 0;
+}
+
+.festival-title {
+  color: #000;
+  font: 900 28x/1.1 'Noto Sans KR', sans-serif;
+  margin: 48px 360px;
+}
+
+.festival-title-light {
+  font-weight: 350;
+}
 .hero-section {
   position: relative;
   display: flex;
   align-items: center;
   min-height: 464px;
-  padding: 121px 80px 70px;
+  padding: 121px 0px 70px;
   font-family: Inter, sans-serif;
   overflow: hidden;
 }
@@ -113,8 +280,7 @@ const getThemeList = () => {
 .content-wrapper {
   padding: 0px 360px 0px;
   position: relative;
-  width: 1200px;
-  max-width: 100%;
+  width: 100%;
 }
 
 .hero-title {
