@@ -1,14 +1,14 @@
 <script setup>
 import { ref, onMounted } from "vue"
-import { listSido } from "@/api/map"
-
-import VKakaoMap from "@/components/common/VKakaoMap.vue"
-const { VITE_OPEN_API_SERVICE_KEY } = import.meta.env
+import { listSido, listTheme } from "@/api/sido"
 
 const sidoList = ref([])
+const themeList = ref([])
+const key = ref(""); // 기본값을 ""로 설정 (전국 선택)
 
 onMounted(() => {
-  getSidoList()
+  getSidoList(),
+  getThemeList()
 });
 
 const getSidoList = () => {
@@ -20,6 +20,21 @@ const getSidoList = () => {
         options.push({ text: sido.sidoName, value: sido.sidoCode })
       })
       sidoList.value = options
+    },
+    (err) => {
+      console.log(err)
+    }
+  )
+}
+const getThemeList = () => {
+  listTheme(
+    ({ data }) => {
+      let options = []
+      options.push({ text: "선택 없음", value: "" })
+      data.forEach((content) => {
+        options.push({ text: content.themeName, value: content.themeId})
+      })
+      themeList.value = options
     },
     (err) => {
       console.log(err)
@@ -38,7 +53,7 @@ const getSidoList = () => {
       <section class="search-section">
         <nav class="tab-navigation">
           <ul class="tab-list">
-            <li class="tab-item active">국내 숙소</li>
+            <li class="tab-item active">국내 여행</li>
           </ul>
           <div class="active-tab-indicator"></div>
         </nav>
@@ -61,10 +76,11 @@ const getSidoList = () => {
           <div class="select-bar">
             <label for="themeSelect" class="visually-hidden">테마를 선택하세요</label>
             <select id="themeSelect" class="search-select">
-              <option value="" disabled selected>테마를 선택하세요</option>
-              <option value="nature">자연</option>
-              <option value="city">도시</option>
-              <option value="history">역사</option>
+              <option v-for="option in themeList"
+              :key="option.value"
+              :value="option.value">
+              {{ option.text }}
+              </option>
             </select>
           </div>
           <button type="submit" class="search-button">검색</button>
