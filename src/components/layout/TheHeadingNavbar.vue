@@ -10,7 +10,7 @@
           <li><router-link :to="{name:'trip-search'}" class="nav-link" :class="{ active: currentPath === '/trip-search' }">검색</router-link></li>
           <li><router-link :to="{name:'trip-course'}" class="nav-link" :class="{ active: currentPath === '/trip-course' }">여행코스</router-link></li>
           <li><router-link :to="{name:'trip-info'}" class="nav-link" :class="{ active: currentPath === '/trip-info' }">여행정보</router-link></li>
-          <li><router-link :to="{name:'trip-benefits'}" class="nav-link" :class="{ active: currentPath === '/trip-benefits' }">여행혜택</router-link></li>
+          <li><router-link :to="{name:'notices'}" class="nav-link" >공지사항</router-link></li>
         </ul>
       </nav>
       <div class="header-actions">
