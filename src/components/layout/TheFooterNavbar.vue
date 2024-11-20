@@ -93,194 +93,196 @@
 
   <style scoped>
   .site-footer {
-    background: #fafafa;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 80px 65px;
-  }
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px 65px;
+}
 
-  .footer-container {
-    width: 1200px;
-    max-width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+.footer-container {
+  width: 1200px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0 auto; /* 중앙 정렬 */
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between; /* 섹션 간 동일한 간격 */
+  width: 100%;
+  gap: 40px; /* 섹션 간 여유 간격 */
+  flex-wrap: nowrap; /* 줄바꿈 방지 */
+}
+
+
+.footer-nav,
+.customer-service {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 21px;
+}
+
+.section-title {
+  color: #707070;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 10px; /* 제목과 내용 간 여백 */
+}
+
+.service-hours {
+  color: #999;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.contact-buttons {
+  display: flex;
+  margin-top: 20px;
+  gap: 8px;
+}
+
+.contact-btn {
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  gap: 9px;
+  padding: 14px 15px;
+  border: 2px solid #ebebeb;
+  color: #333;
+  font-size: 15px;
+  align-items: center;
+  cursor: pointer;
+  flex: 1;
+}
+
+.contact-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  flex-grow: 1;
+}
+
+.footer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.nav-link {
+  color: #999;
+  font: 600 13px Inter, sans-serif;
+  text-decoration: none;
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+}
+
+.legal-info {
+  display: flex;
+  margin-top: 19px;
+  gap: 7px;
+  color: #999;
+  flex-wrap: wrap;
+  font: 11px Inter, sans-serif;
+}
+
+.company-details {
+  line-height: 16px;
+  flex-grow: 1;
+}
+
+.business-info-link {
+  font-weight: 600;
+  color: #999;
+  text-decoration: none;
+  margin-top: 16px;
+}
+
+.legal-text {
+  color: #999;
+  font: 400 11px/16px Inter, sans-serif;
+  margin-top: 18px;
+}
+
+.footer-bottom {
+  display: flex;
+  margin-top: 18px;
+  width: 100%;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.policy-links {
+  display: flex;
+  gap: 17px;
+  color: #999;
+  font: 600 13px Inter, sans-serif;
+}
+
+.policy-link {
+  color: #999;
+  text-decoration: none;
+}
+
+.policy-link.privacy {
+  color: #333;
+}
+
+.social-links {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.social-icon {
+  width: 32px;
+  height: 23px;
+  object-fit: contain;
+}
+
+.social-icon-large {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.copyright {
+  color: #999;
+  margin-top: 36px;
+  font: 400 11px/1 Inter, sans-serif;
+}
+
+@media (max-width: 991px) {
+  .site-footer {
+    padding: 0 20px;
   }
 
   .footer-content {
-    display: flex;
-    width: 100%;
-    align-items: flex-start;
-    gap: 40px 100px;
-    flex-wrap: wrap;
-    padding: 2px 80px 39px 0;
-  }
-
-  .customer-service {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    font: 600 1rem Inter, sans-serif;
-  }
-
-  .section-title {
-    color: #707070;
-    font-size: 17px;
-    font-weight: 700;
-  }
-
-  .service-hours {
-    color: #999;
-    font-size: 13px;
-    line-height: 20px;
-    margin-top: 22px;
-  }
-
-  .contact-buttons {
-    display: flex;
-    margin-top: 20px;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .contact-btn {
-    border-radius: 10px;
-    background: #fff;
-    display: flex;
-    gap: 9px;
-    padding: 14px 15px;
-    border: 2px solid #ebebeb;
-    color: #333;
-    font-size: 15px;
-    align-items: center;
-    cursor: pointer;
-    flex: 1;
-  }
-
-  .contact-icon {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
+    flex-wrap: wrap; /* 화면이 작아질 때 줄바꿈 허용 */
   }
 
   .footer-links {
-    display: flex;
-    gap: 20px;
-    flex-grow: 1;
+    flex-direction: column; /* 작은 화면에서는 열로 배치 */
   }
 
-  .footer-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-top: 21px;
+  .contact-btn {
+    white-space: normal; /* 텍스트 줄바꿈 허용 */
   }
 
-  .nav-link {
-    color: #999;
-    font: 600 13px Inter, sans-serif;
-    text-decoration: none;
-  }
-
-  .legal-info {
-    display: flex;
-    margin-top: 19px;
-    gap: 7px;
-    color: #999;
-    flex-wrap: wrap;
-    font: 11px Inter, sans-serif;
-  }
-
-  .company-details {
-    line-height: 16px;
-    flex-grow: 1;
-  }
-
-  .business-info-link {
-    font-weight: 600;
-    color: #999;
-    text-decoration: none;
-    margin-top: 16px;
-  }
-
-  .legal-text {
-    color: #999;
-    font: 400 11px/16px Inter, sans-serif;
-    margin-top: 18px;
-  }
-
-  .footer-bottom {
-    display: flex;
-    margin-top: 18px;
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-
+  .legal-info,
+  .legal-text,
+  .footer-bottom,
   .policy-links {
-    display: flex;
-    gap: 17px;
-    color: #999;
-    font: 600 13px Inter, sans-serif;
+    max-width: 100%;
   }
+}
 
-  .policy-link {
-    color: #999;
-    text-decoration: none;
-  }
-
-  .policy-link.privacy {
-    color: #333;
-  }
-
-  .social-links {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .social-icon {
-    width: 32px;
-    height: 23px;
-    object-fit: contain;
-  }
-
-  .social-icon-large {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-  }
-
-  .copyright {
-    color: #999;
-    margin-top: 36px;
-    font: 400 11px/1 Inter, sans-serif;
-  }
-
-  @media (max-width: 991px) {
-    .site-footer {
-      padding: 0 20px;
-    }
-
-    .footer-content {
-      padding-right: 20px;
-    }
-
-    .footer-links {
-      flex-direction: column;
-    }
-
-    .contact-btn {
-      white-space: normal;
-    }
-
-    .legal-info,
-    .legal-text,
-    .footer-bottom,
-    .policy-links {
-      max-width: 100%;
-    }
-  }
   </style>

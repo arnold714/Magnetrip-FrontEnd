@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue"
 import { listSido, listTheme } from "@/api/sido"
 import { listAttraction } from "@/api/attraction"
+import VPageNavigation from "@/components/common/VPageNavigation.vue";
 
 const sidoList = ref([])
 const themeList = ref([])
@@ -21,7 +22,8 @@ const param = ref({
 
 onMounted(() => {
   getSidoList(),
-  getThemeList()
+  getThemeList(),
+  getAttractionList()
 });
 
 const getSidoList = () => {
@@ -69,12 +71,17 @@ const getAttractionList = () => {
     }
   );
 };
-// const onPageChange = (val) => {
-//   console.log(val + "번 페이지로 이동 준비 끝!!!");
-//   currentPage.value = val;
-//   param.value.pgno = val;
-//   getAttractionList();
-// };
+const onSearch = () => {
+  currentPage.value = 1; // 검색 시 페이지를 1로 초기화
+  param.value.pgno = 1; // 파라미터의 페이지 번호도 1로 초기화
+  getAttractionList(); // 검색 결과 업데이트
+};
+const onPageChange = (val) => {
+  console.log(val + "번 페이지로 이동 준비 끝!!!");
+  currentPage.value = val;
+  param.value.pgno = val;
+  getAttractionList();
+};
 </script>
 
 <template>
@@ -117,7 +124,7 @@ const getAttractionList = () => {
               </option>
             </select>
           </div>
-          <button type="button" class="search-button" @click="getAttractionList">검색</button>
+          <button type="button" class="search-button" @click="onSearch">검색</button>
         </form>
       </section>
     </div>
@@ -127,7 +134,7 @@ const getAttractionList = () => {
         인기<span class="festival-title-light">여행지 알려드릴게요!</span>
       </h2>
       <div class="temple-container">
-      <article class="temple-card" 
+      <article class="temple-card"
       v-for="attraction in attractions"
       :key="attraction.contentId">
       <img
@@ -140,6 +147,13 @@ const getAttractionList = () => {
         <p class="temple-tags">{{ attraction.contentTypeName }}</p>
         <p class="temple-location">{{ attraction.sidoName }} {{ attraction.gugunName }}</p>
       </article>
+      <div class="pagination-wrapper">
+      <VPageNavigation
+        :current-page="currentPage"
+        :total-page="totalPage"
+        @pageChange="onPageChange"
+      ></VPageNavigation>
+    </div>
   </div>
     </body>
 
@@ -154,6 +168,16 @@ const getAttractionList = () => {
   margin: 20px 0;
   justify-content: flex-start; /* 양 끝에 요소 배치 */
   box-sizing: border-box;
+}
+
+.temple-container + .pagination-wrapper {
+  display: flex;
+  justify-content: center; /* 페이지네이션 중앙 정렬 */
+  margin-top: 20px;
+}
+
+.pagination-wrapper {
+  width: 100%; /* 부모 컨테이너 크기를 전체로 설정 */
 }
 
 .temple-card {
