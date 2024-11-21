@@ -58,7 +58,13 @@ const router = createRouter({
           component: () => import("@/components/notices/TripNoticesModify.vue"),
         },
       ],
-    }
+    },
+    {
+      path: '/attraction/:contentId',
+      name: 'attraction-detail',
+      component:() => import("@/components/trip/AttractionDetail.vue"),
+      props: true, // contentId를 props로 전달
+    },
   ],
 })
 
