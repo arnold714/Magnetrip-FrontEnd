@@ -3,7 +3,9 @@ import { ref, onMounted } from "vue"
 import { listSido, listTheme } from "@/api/sido"
 import { listAttraction } from "@/api/attraction"
 import VPageNavigation from "@/components/common/VPageNavigation.vue";
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const sidoList = ref([])
 const themeList = ref([])
 const attractions = ref([])
@@ -82,6 +84,13 @@ const onPageChange = (val) => {
   param.value.pgno = val;
   getAttractionList();
 };
+const onContainerClick = (event) => {
+  const contentId = event.target.closest('.temple-card')?.getAttribute('data-content-id');
+  if (contentId) {
+    console.log(`${contentId}를 클릭했습니다.`);
+    router.push({ name: 'attraction-detail', params: { contentId } });
+  }
+};
 </script>
 
 <template>
@@ -133,10 +142,10 @@ const onPageChange = (val) => {
       <h2 class="festival-title">
         인기<span class="festival-title-light">여행지 알려드릴게요!</span>
       </h2>
-      <div class="temple-container">
+      <div class="temple-container"  @click="onContainerClick" >
       <article class="temple-card"
       v-for="attraction in attractions"
-      :key="attraction.contentId">
+      :key="attraction.contentId"  :data-content-id="attraction.contentId">
       <img
         loading="lazy"
         :src="attraction.firstImage1"
