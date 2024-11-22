@@ -6,11 +6,11 @@
       </a>
       <nav class="main-nav">
         <ul class="nav-list">
-          <li><router-link :to="{name:'trip'}" class="nav-link" :class="{ active: currentPath === '/' }">홈</router-link></li>
-          <li><router-link :to="{name:'trip-search'}" class="nav-link" :class="{ active: currentPath === '/trip-search' }">검색</router-link></li>
-          <li><router-link :to="{name:'trip-plan'}" class="nav-link" :class="{ active: currentPath === '/trip-plan' }">여행계획</router-link></li>
-          <li><router-link :to="{name:'trip-info'}" class="nav-link" :class="{ active: currentPath === '/trip-info' }">여행정보</router-link></li>
-          <li><router-link :to="{name:'notices'}" class="nav-link" >공지사항</router-link></li>
+          <li><router-link :to="{name:'trip'}" exact-active-class="active" class="nav-link" :class="{ active: currentPath === '/' }">홈</router-link></li>
+          <li><router-link :to="{name:'trip-search'}" class="nav-link" active-class="active" :class="{ active: currentPath === '/trip-search'  } ">검색</router-link></li>
+          <li><router-link :to="{name:'trip-plan'}" class="nav-link" active-class="active" :class="{ active: currentPath === '/trip-plan' }">여행계획</router-link></li>
+          <li><router-link :to="{name:'trip-info'}" class="nav-link" active-class="active" :class="{ active: currentPath === '/trip-info' }">여행정보</router-link></li>
+          <li><router-link :to="{name:'notices'}" class="nav-link" active-class="active" :class="{ active: currentPath === '/notices' }">공지사항</router-link></li>
         </ul>
       </nav>
       <div class="header-actions">

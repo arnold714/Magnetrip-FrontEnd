@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import TheMainView from "../views/TheMainView.vue";
+import TheMakingView from "../views/TheMakingView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,11 +25,11 @@ const router = createRouter({
           name:"trip-info",
           component: () => import("@/components/trip/TripSearch.vue"),
         }
-        
+
       ]
     },
     {
-      path: "/",
+      path: "/notices",
       name: "notices",
       // component: TheBoardView,
       // route level code-splitting
@@ -65,6 +66,11 @@ const router = createRouter({
       component:() => import("@/components/trip/AttractionDetail.vue"),
       props: true, // contentId를 props로 전달
     },
+    {
+      path:'/plan/making',
+      name: 'plan-making',
+      component:TheMakingView
+    }
   ],
 })
 

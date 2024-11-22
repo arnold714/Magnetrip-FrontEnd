@@ -71,9 +71,11 @@ const onPageChange = (val) => {
           alt="Company Name"
         />
       </article>
-      <button class="create-course-btn" tabindex="0">
-        <span>코스만들기</span>
-      </button>
+      <router-link to="{name:trip-plan-make}">
+        <button class="create-course-btn" tabindex="0">
+          <span>코스만들기</span>
+        </button>
+      </router-link>
     </main>
   </section>
   <section class="regional-courses">

@@ -27,7 +27,7 @@ const getArticle = () => {
 };
 
 function moveList() {
-  router.push({ name: "article-list" });
+  router.push({ name: "trip-notices" });
 }
 
 function moveModify() {
@@ -51,7 +51,7 @@ function onDeleteArticle() {
 <template>
   <div class="container">
     <div class="row justify-content-center">
-      
+
       <div class="col-lg-10 text-start">
         <div class="row my-2">
           <h2 class="text-secondary px-5">
@@ -61,11 +61,11 @@ function onDeleteArticle() {
         <div class="row">
           <div class="col-md-8">
             <div class="clearfix align-content-center">
-           
-            
+
+
             </div>
           </div>
-          
+
         </div>
         <div class="divider mb-3"></div>
         <!-- Render Content with HTML -->

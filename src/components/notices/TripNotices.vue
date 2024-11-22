@@ -13,7 +13,7 @@ const selectOption = ref([
   { text: "검색조건", value: "" },
   { text: "글번호", value: "notices_no" },
   { text: "제목", value: "subject" },
-  
+
 ]);
 
 const articles = ref([]);
@@ -66,16 +66,16 @@ const moveWrite = () => {
 <template>
   <div class="container">
     <div class="notice-board">
-     
+
 
       <ul class="notice-list">
         <li v-for="article in articles" :key="article.noticesNo" class="notice-item">
           <div class="notice-content">
             <!-- contentType에 따라 내용 표시 -->
             <span class="content-type">[{{ article.contentType }}]</span>
-         
+
             <!-- 제목 -->
-            <a :href="'/view/' + article.noticesNo" class="notice-title">{{ article.subject }}</a>
+            <a :href="'/notices/view/' + article.noticesNo" class="notice-title">{{ article.subject }}</a>
           </div>
           <!-- 작성일 -->
           <div class="notice-date">{{ article.registerTime }}</div>
@@ -222,11 +222,11 @@ const moveWrite = () => {
   .notice-board {
     margin-top: 40px;
   }
-  
+
   .notice-list {
     max-width: 100%;
   }
-  
+
   .notice-item {
     max-width: 100%;
   }
