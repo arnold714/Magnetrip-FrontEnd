@@ -53,7 +53,6 @@ const keyTranslations = {
     seat: "좌석 수",
     smoking: "흡연 가능 여부",
     treatmenu: "취급 메뉴",
-    lcnsno: "라이선스 번호",
     accomcount: "숙박 가능 인원",
     chkbabycarriage: "유모차 사용 가능 여부",
     chkcreditcard: "신용카드 사용 가능 여부",

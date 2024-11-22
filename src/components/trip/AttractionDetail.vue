@@ -1,8 +1,8 @@
-<script setup>
-import { ref, onMounted } from "vue";
+<script setup >
+import { ref, onMounted ,computed} from "vue";
 import { getAttractionDetail } from "@/api/attraction";
 import keyTranslations from "@/util/keyTranslations.js";
-
+import { KakaoMap, KakaoMapMarker } from 'vue3-kakao-maps';
 // 상태 선언
 const attractionDetail = ref({});
 const attractionIntro = ref([]);
@@ -10,7 +10,16 @@ const attractionImages = ref([]);
 const currentIndex = ref(0);
 const props = defineProps(["contentId","mapX", "mapY", "title"]);
 const showAllIntro = ref(false); // "더보기" 상태 관리
+const visibleRef = ref(false);
 
+const mouseOverKakaoMapMarker = ()=> {
+visibleRef.value = true;
+};
+
+
+const mouseOutKakaoMapMarker = () => {
+visibleRef.value = false;
+};
 onMounted(() => {
   fetchAttractionDetail();
 });
@@ -87,7 +96,10 @@ const fetchAttractionDetail = () => {
     }
   );
 };
-
+const coordinate = computed(() => ({
+  lat: parseFloat(attractionDetail.value.mapY) || props.mapY || 37.566826, // 기본값으로 서울의 위도 설정
+  lng: parseFloat(attractionDetail.value.mapX) || props.mapX || 126.9786567, // 기본값으로 서울의 경도 설정
+}));
 // "더보기" 상태 토글
 const toggleShowAllIntro = () => {
   showAllIntro.value = !showAllIntro.value;
@@ -105,42 +117,32 @@ const prevSlide = () => {
   const slider = document.querySelector(".slider");
   slider.style.transform = `translateX(-${currentIndex.value * 100}%)`;
 };
+const likeCount = ref(0); // 좋아요 카운트
+const isLiked = ref(false); // 좋아요 상태
+const viewCount = ref(0); // 조회수 예시 숫자
 
-
-let map; // 카카오 맵 객체
-let marker; // 마커 객체
-
-onMounted(() => {
-  if (window.kakao && window.kakao.maps) {
-    initMap();
+// 좋아요 버튼 클릭 시 호출되는 함수
+const toggleLike = () => {
+  if (isLiked.value) {
+    likeCount.value -= 1; // 좋아요 취소
   } else {
-    // 카카오 맵 스크립트 로드
-    const script = document.createElement("script");
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${
-      import.meta.env.VITE_KAKAO_MAP_SERVICE_KEY
-    }`;
-    script.onload = () => kakao.maps.load(() => initMap());
-    document.head.appendChild(script);
+    likeCount.value += 1; // 좋아요 증가
   }
-});
+  isLiked.value = !isLiked.value; // 상태 토글
+};
 
-const initMap = () => {
-  const container = document.getElementById("map"); // map-container와 연결
-  const options = {
-    center: new kakao.maps.LatLng(props.mapY, props.mapX), // mapX, mapY를 기준으로 지도 중앙 설정
-    level: 3, // 지도 확대 레벨
-  };
-  map = new kakao.maps.Map(container, options);
+const newComment = ref(""); // 새 댓글 입력 값
+const comments = ref([]); // 댓글 리스트
 
-  // 마커 생성 및 지도에 추가
-  marker = new kakao.maps.Marker({
-    position: new kakao.maps.LatLng(props.mapY, props.mapX), // 마커 위치 설정
-    map: map, // 마커를 표시할 지도
-    title: props.title || "위치", // 마커 제목
-  });
-
-  // 지도에 마커를 추가
-  marker.setMap(map);
+// 댓글 등록 함수
+const addComment = () => {
+  if (newComment.value.trim()) {
+    comments.value.push({
+      text: newComment.value,
+      date: new Date().toLocaleString(), // 현재 시간
+    });
+    newComment.value = ""; // 입력창 초기화
+  }
 };
 
 </script>
@@ -151,7 +153,14 @@ const initMap = () => {
     <header class="spot-header">
       <h1 class="title">{{ attractionDetail.title }}</h1>
     </header>
-
+    <div class="like-view-container">
+    <button class="like-button" @click="toggleLike">
+      <span class="like-icon" :class="{ liked: isLiked }">❤️</span>
+    </button>
+    <span class="like-count">{{ likeCount }}</span>
+    <span class="view-count"><strong>조회수: {{ viewCount }}</strong></span>
+  </div>
+    <div class="section-dividertitle"></div>
     <section class="gallery-section">
       <div class="slider-container">
         <div class="slider">
@@ -175,34 +184,64 @@ const initMap = () => {
     <!-- 상세 정보 -->
     <section class="spot-details">
       <h2 class="section-title">상세정보</h2>
+      <div class="section-divider"></div>
       <p class="detail-text">{{ attractionDetail.overview }}</p>
       <p><strong>주소:</strong> {{ attractionDetail.address }}</p>
       <p><strong>전화번호:</strong> {{ attractionDetail.tel }}</p>
-      <a :href="attractionDetail.homepage" target="_blank" class="homepage-link">공식 홈페이지</a>
-
+      <!-- <a :href="attractionDetail.homepage">공식 홈페이지</a> -->
+    
       <!-- 지도 -->
       <div class="map-container">
          <!-- 카카오맵을 표시할 div -->
-        <div id="map"></div>
+         <KakaoMap :lat="coordinate.lat" :lng="coordinate.lng" :draggable="true" :width="'50rem'" :height="'25rem'">
+            <KakaoMapMarker :lat="coordinate.lat" :lng="coordinate.lng" :clickable="true" 
+            :infoWindow="{ content: attractionDetail.title, visible: visibleRef }" 
+            @mouseOverKakaoMapMarker="mouseOverKakaoMapMarker"
+            @mouseOutKakaoMapMarker="mouseOutKakaoMapMarker"
+            :image="{imageSrc: 'https://cdn.icon-icons.com/icons2/317/PNG/512/map-marker-icon_34392.png',
+            imageWidth: 50,imageHeight: 50,imageOption: {}}"></KakaoMapMarker>
+        </KakaoMap>
       </div>
 
       <!-- 세부정보 -->
+      <div class="info-container">
       <section class="spot-details">
-      <h2 class="section-title">세부정보</h2>
       <ul>
         <!-- 최대 10개까지만 표시 -->
         <li
-          v-for="(item, index) in attractionIntro.slice(0, showAllIntro ? attractionIntro.length : 10)"
+          v-for="(item, index) in attractionIntro.slice(0, showAllIntro ? attractionIntro.length : 5)"
           :key="index"
         >
           <strong>{{ item.label }}:</strong> {{ item.value }}
         </li>
       </ul>
       <!-- 더보기 버튼 -->
-      <button v-if="attractionIntro.length > 10" @click="toggleShowAllIntro">
-        {{ showAllIntro ? "접기" : "더보기" }}
+      <button v-if="attractionIntro.length > 5" @click="toggleShowAllIntro" class="toggle-button">
+        {{ showAllIntro ? "닫기-" : "더보기+" }}
       </button>
     </section>
+     </div>
+    </section>
+    <!-- 댓글 창  -->
+    <section class="comment-section">
+      <h2 class="comment-title">댓글</h2>
+      <textarea
+        v-model="newComment"
+        placeholder="소중한 댓글을 남겨주세요."
+        class="comment-input"
+      ></textarea>
+      <button @click="addComment" class="comment-button">등록</button>
+      <!-- 댓글 정보 가져오는 div -->
+      <div v-if="comments.length > 0" class="comment-list">
+        <div
+          class="comment-item"
+          v-for="(comment, index) in comments"
+          :key="index"
+        >
+          <p class="comment-text">{{ comment.text }}</p>
+          <small class="comment-date">{{ comment.date }}</small>
+        </div>
+      </div>
     </section>
   </main>
 </template>
@@ -272,6 +311,7 @@ const initMap = () => {
   margin-bottom: 10px;
   margin-top: 100px;
   text-align: center;
+  font-style: italic;
 }
   
   .spot-location {
@@ -613,17 +653,149 @@ const initMap = () => {
     }
   }
 
-  button {
-  background-color: #007bff;
-  color: white;
+  .toggle-button {
+  background-color: white; /* 배경색 흰색 */
+  color: black; /* 글자색 검정 */
+  border: 1px solid white; /* 버튼 테두리 추가 */
+  border-radius: 5px; /* 모서리를 약간 둥글게 설정 */
+  padding: 10px 15px; /* 버튼 안쪽 여백 */
+  cursor: pointer; /* 마우스를 올리면 클릭 가능 표시 */
+  font-size: 16px; /* 글자 크기 */
+  font-weight: bold; /* 글자 굵게 */
+  transition: all 0.3s ease; /* 애니메이션 효과 */
+}
+.section-divider {
+  width: 100%;
+  height: 4px; /* 굵기 */
+  background-color: #333; /* 선 색상 */
+  margin: 20px 0; /* 위아래 여백 */
+}
+.section-dividertitle{
+  width: 100%;
+  height: 4px; /* 굵기 */
+  background-color: #333; /* 선 색상 */
+  margin: 50px 0; /* 위아래 여백 */
+}
+
+.info-container li {
+  margin-bottom: 8px;
+  line-height: 2.6;
+  
+}
+
+.info-container li strong {
+  color: #333;
+}
+.like-view-container {
+  position: absolute; /* 위치를 절대값으로 설정 */
+  margin-top : 190px; /* section-divider-title 위로 이동 */
+  margin-left: 555px;
+  left: 0; /* 왼쪽 끝으로 배치 */
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 하트와 텍스트 사이 간격 */
+}
+
+.section-dividertitle {
+  position: relative; /* 자식 요소(.like-view-container)의 기준 위치 설정 */
+  width: 100%;
+  height: 4px;
+  background-color: #333;
+  margin: 90px 0;
+}
+
+.like-button {
+  background: none;
   border: none;
-  padding: 10px 15px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.like-icon {
+  font-size: 24px;
+  color: #ccc;
+  transition: color 0.3s ease;
+}
+
+.like-icon.liked {
+  color: red;
+}
+
+.like-count {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.view-count {
+  font-size: 16px;
+  color: #666;
+}
+
+/* 댓글 css */
+.comment-section {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+.comment-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.comment-input {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  border: 1px solid #ccc;
   border-radius: 5px;
+  resize: none;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.comment-button {
+  display: block;
+  background-color: navy;
+  color: white;
+  margin-left: 685px;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 14px;
   cursor: pointer;
 }
 
-button:hover {
+.comment-button:hover {
   background-color: #0056b3;
 }
+
+.comment-list {
+  margin-top: 20px;
+}
+
+.comment-item {
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0;
+}
+
+.comment-text {
+  font-size: 14px;
+  color: #333;
+}
+
+.comment-date {
+  font-size: 12px;
+  color: #888;
+}
+
+/* 버튼 호버 효과 */
+/* .toggle-button:hover {
+  background-color: black; 
+  color: white; 
+} */
 
 </style>
