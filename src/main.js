@@ -13,3 +13,7 @@ app.use(createPinia())
 app.use(router)
 
 app.mount('#app')
+import { useKakao } from 'vue3-kakao-maps/@utils';
+
+const {VITE_KAKAO_MAP_SERVICE_KEY} = import.meta.env;
+useKakao(VITE_KAKAO_MAP_SERVICE_KEY);

@@ -71,7 +71,7 @@ const onPageChange = (val) => {
           alt="Company Name"
         />
       </article>
-      <router-link to="{name:trip-plan-make}">
+      <router-link :to="{name: 'plan-making'}">
         <button class="create-course-btn" tabindex="0">
           <span>코스만들기</span>
         </button>

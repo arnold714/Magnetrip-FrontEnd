@@ -22,10 +22,10 @@
 
 <script>
 export default {
-  data() {
-    return {
-      currentPath: window.location.pathname
-    };
+  computed: {
+    currentPath() {
+      return this.$route.path; // Vue Router의 경로를 가져옵니다.
+    }
   }
 };
 </script>
