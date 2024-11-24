@@ -10,7 +10,7 @@ const route = useRoute();
   <div>
     <TheHeadingNavbar v-if="!route.path.startsWith('/plan/making')"></TheHeadingNavbar>
     <router-view></router-view>
-    <TheFooterNavbar v-if="!route.path.startsWith('/plan/making')"></TheFooterNavbar>
+    <TheFooterNavbar v-if="!route.path.startsWith('/plan/making') && route.path !== '/newplan'"></TheFooterNavbar>
   </div>
 </template>
 

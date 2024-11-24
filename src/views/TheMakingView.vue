@@ -1,47 +1,124 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from "vue-router";
 import { KakaoMap } from 'vue3-kakao-maps';
+import { getPlan,searchList } from '@/api/plan'; // API 호출 함수 가져오기
+const isRegionChecked = ref(true); // 체크박스 상태 (기본값: 체크됨)
+const searchQuery = ref(''); // 검색어 초기값: 빈 문자열
+const selectedCategory = ref('여행지'); // 선택된 카테고리 (기본값: 여행지)
+const currentPage = ref(1);
+const isLoading = ref(false); // 로딩 상태를 나타내는 플래그
+const route = useRoute();
+const planId = route.params.planId;
+console.log(planId);
+const getClassByType = (type) => {
+  switch (type) {
+    case '관광지':
+    case '문화시설':
+    case '축제공연행사':
+    case '여행코스':
+    case '레포츠':
+    case '쇼핑':
+      return 'type-travel';
+    case '음식점':
+      return 'type-restaurant';
+    case '숙박':
+      return 'type-hotel';
+    default:
+      return 'type-default';
+  }
+};
+
+
+// 데이터를 가져오는 함수
+const plan = ref({});
+
+const fetchPlan = (planId) => {
+  console.log("서버에서 계획 얻어오자!!!", planId);
+  getPlan(
+    planId,
+    ({ data }) => {
+      plan.value = data.plan;
+      fetchSearchResults();
+    },
+    (error) => {
+      console.log(error);
+    }
+  );
+};
+
+// 컴포넌트가 마운트될 때 데이터를 가져옴
+onMounted(() => {
+  fetchPlan(planId);
+});
+const removePlace = (day, contentId) => {
+  const targetArray =
+    day === 1 ? day1Places.value : day === 2 ? day2Places.value : day3Places.value;
+  const index = targetArray.findIndex((place) => place.contentId === contentId);
+  if (index !== -1) {
+    targetArray.splice(index, 1); // 해당 항목 제거
+  }
+};
+
 
 // 두 번째 travel-summary의 가시성 상태를 관리
 const isSecondSummaryVisible = ref(false);
 
+
 // 드래그 앤 드롭을 위한 데이터 구조
 const day1Places = ref([
-  {
-    id: 1,
-    type: '여행지',
-    name: '김준석 등대',
-    address: '전라남도 나주시 등대길 80',
-    image: 'https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/0159ece3e9e7d1e5cc90279ca7405e2e3098c9bd12d9ff8b71e2553a5613db3c'
-  }
 ]);
 
 const day2Places = ref([
-  {
-    id: 2,
-    type: '여행지',
-    name: '박재형 등대',
-    address: '전라남도 나주시 등대길 80',
-    image: 'https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/0159ece3e9e7d1e5cc90279ca7405e2e3098c9bd12d9ff8b71e2553a5613db3c'
-  }
 ]);
+const day3Places = ref([]); // Day 3에 대한 데이터 배열
 
-const searchResults = ref([
-  {
-    id: 3,
-    type: '여행지',
-    name: '정규현 등대',
-    address: '전라남도 나주시 등대길 80',
-    image: 'https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/0159ece3e9e7d1e5cc90279ca7405e2e3098c9bd12d9ff8b71e2553a5613db3c'
-  },
-  {
-    id: 4,
-    type: '여행지',
-    name: '김영준 등대',
-    address: '전라남도 나주시 등대길 80',
-    image: 'https://cdn.builder.io/api/v1/image/assets/29b55af8a06640f6ab071ae22829d009/0159ece3e9e7d1e5cc90279ca7405e2e3098c9bd12d9ff8b71e2553a5613db3c'
-  }
-]);
+const searchResults = ref([]);
+
+const fetchSearchResults = (append = false) => {
+  if (isLoading.value) return; // 이미 로딩 중이면 중복 요청 방지
+  isLoading.value = true;
+
+  const params = {
+    query: searchQuery.value,
+    category: selectedCategory.value,
+    sidoCode: isRegionChecked.value ? plan.value.areaCode : null,
+    gugunCode: isRegionChecked.value ? plan.value.siGunGuCode : null,
+    page: currentPage.value, // 현재 페이지
+    size: 20, // 한 번에 가져올 데이터 개수
+  };
+
+  console.log("서버에서 검색 결과 얻어오자!!!", params);
+
+  searchList(
+    params,
+    ({ data }) => {
+      if (append) {
+        // 더보기 버튼을 눌렀을 때 기존 데이터에 추가
+        searchResults.value.push(...data.attractions);
+      } else {
+        // 새로 검색했을 때 데이터 덮어쓰기
+        searchResults.value = data.attractions;
+      }
+      isLoading.value = false;
+    },
+    (error) => {
+      console.log(error);
+      isLoading.value = false;
+    }
+  );
+};
+// 검색 버튼 클릭 시 호출되는 함수
+const onSearchButtonClick = () => {
+  currentPage.value = 1; // 페이지를 초기화
+  fetchSearchResults(); // 검색 결과 가져오기
+};
+// 더보기 버튼 클릭 시 호출되는 함수
+const loadMoreResults = () => {
+  currentPage.value += 1; // 다음 페이지
+  fetchSearchResults(true); // 기존 데이터에 추가
+};
+
 const handleDragStart = (event, place, sourceDay) => {
   const dragData = {
     place: { ...place },
@@ -91,14 +168,26 @@ const handleDrop = (event, targetDay) => {
   const { place, sourceDay } = dragData;
 
   const dropTarget = event.target.closest('.place-card');
-  const targetArray = targetDay === 1 ? day1Places.value : day2Places.value;
+  const targetArray =
+    targetDay === 1
+      ? day1Places.value
+      : targetDay === 2
+      ? day2Places.value
+      : day3Places.value; // Day 3 추가
+  const sourceArray =
+    sourceDay === 1
+      ? day1Places.value
+      : sourceDay === 2
+      ? day2Places.value
+      : day3Places.value; // Day 3 추가
 
-  let dropIndex = targetArray.length;
+  let dropIndex = targetArray.length; // 기본적으로 마지막에 추가
 
   if (dropTarget) {
     const dropRect = dropTarget.getBoundingClientRect();
     const isBottomHalf = event.clientY > dropRect.top + dropRect.height / 2;
 
+    // 드롭한 위치의 인덱스를 계산
     dropIndex = Array.from(
       document.querySelectorAll(`.day-section[data-day="${targetDay}"] .place-card`)
     ).indexOf(dropTarget);
@@ -109,24 +198,17 @@ const handleDrop = (event, targetDay) => {
   }
 
   // 원래 배열에서 제거
-  if (sourceDay === 1) {
-    const sourceIndex = day1Places.value.findIndex((p) => p.id === place.id);
-    if (sourceIndex !== -1) day1Places.value.splice(sourceIndex, 1);
-  } else if (sourceDay === 2) {
-    const sourceIndex = day2Places.value.findIndex((p) => p.id === place.id);
-    if (sourceIndex !== -1) day2Places.value.splice(sourceIndex, 1);
+  const sourceIndex = sourceArray.findIndex((p) => p.contentId === place.contentId);
+  if (sourceIndex !== -1) {
+    sourceArray.splice(sourceIndex, 1);
   }
 
-  // 빈 영역에도 추가 가능
-  targetArray.splice(Math.min(dropIndex, targetArray.length), 0, place);
+  // 타겟 배열에 추가
+  targetArray.splice(Math.min(dropIndex, targetArray.length), 0, { ...place });
 
   // 드래그 스타일 초기화
   clearDragStyles();
 };
-
-
-
-
 
 
 const addPlace = () => {
@@ -146,7 +228,7 @@ const addPlace = () => {
 
     <!-- 지도 위에 템플릿 오버레이 -->
     <div class="summaries-container">
-      <main class="travel-summary">
+      <main class="first-travel-summary">
         <header class="header-container">
 
         </header>
@@ -164,7 +246,7 @@ const addPlace = () => {
             <div class="user-info">
 
               <div class="user-details">
-                <h2 class="username">skek님의 여행계획</h2>
+                <h2 class="username">{{plan.title}}</h2>
                 <div class="rating-info">
                 </div>
               </div>
@@ -176,7 +258,7 @@ const addPlace = () => {
           </article>
           <section class="trip-details">
             <div class="trip-summary">
-              <span class="duration-badge">2박3일</span>
+              <span class="duration-badge">{{ plan.tripDay }}</span>
               <div class="trip-stats">
                 <div class="stat-item">
                   <span class="stat-label">총 이동거리</span>
@@ -186,17 +268,8 @@ const addPlace = () => {
                 <div class="stat-item">
                   <span class="stat-label">여행지역</span>
                   <span class="separator"></span>
-                  <span class="stat-value">광주 ~ 전남 나주시</span>
+                  <span class="stat-value">{{ plan.sidoName }}<span v-if="plan.gugunName"> ~ {{ plan.gugunName }}</span></span>
                 </div>
-                <p class="total-places">총 15개 여행지/음식점/카페/숙소 추천!</p>
-              </div>
-            </div>
-            <div class="tag-container">
-              <div class="tag">
-                <span class="tag-text">#테마파크</span>
-              </div>
-              <div class="tag">
-                <span class="tag-text">#실내여행지</span>
               </div>
             </div>
           </section>
@@ -211,27 +284,42 @@ const addPlace = () => {
               @dragover="handleDragOver"
               @dragleave="handleDragLeave"
               @drop="(event) => handleDrop(event, 1)"
+              v-if="plan.tripDay === '당일치기' || plan.tripDay === '1박 2일' || plan.tripDay === '2박 3일'"
             >
               <h2 class="day-title">Day 1</h2>
               <article
                 v-for="place in day1Places"
-                :key="place.id"
+                :key="place.contentId"
                 class="place-card"
                 draggable="true"
                 @dragstart="handleDragStart($event, place, 1)"
               >
                 <img
-                  :src="place.image"
-                  :alt="place.name"
+                  :src="place.firstImage1"
+                  :alt="place.title"
                   class="place-image"
                   loading="lazy"
                 />
                 <div class="place-info">
-                  <span class="place-type">{{ place.type }}</span>
-                  <h3 class="place-name">{{ place.name }}</h3>
-                  <address class="place-address">{{ place.address }}</address>
+                  <span
+                    :class="['place-type', getClassByType(place.contentTypeName)]"
+                  >
+                    {{ place.contentTypeName }}
+                  </span>
+                  <h3 class="place-name">{{ place.title }}</h3>
+                  <address class="place-address">{{ place.addr1 }}</address>
                 </div>
+                <button
+                  class="delete-button"
+                  @click="removePlace(1, place.contentId)"
+                  aria-label="Delete place"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+                  </svg>
+                </button>
               </article>
+
             </section>
 
             <section
@@ -240,32 +328,90 @@ const addPlace = () => {
         @dragover="handleDragOver"
         @dragleave="handleDragLeave"
         @drop="(event) => handleDrop(event, 2)"
+        v-if="plan.tripDay === '1박 2일' || plan.tripDay === '2박 3일'"
+
       >
         <h2 class="day-title">Day 2</h2>
         <article
-          v-for="place in day2Places"
-          :key="place.id"
-          class="place-card"
-          draggable="true"
-          @dragstart="handleDragStart($event, place, 2)"
-        >
-          <img
-            :src="place.image"
-            :alt="place.name"
-            class="place-image"
-            loading="lazy"
-          />
-          <div class="place-info">
-            <span class="place-type">{{ place.type }}</span>
-            <h3 class="place-name">{{ place.name }}</h3>
-            <address class="place-address">{{ place.address }}</address>
-          </div>
-        </article>
+                v-for="place in day2Places"
+                :key="place.contentId"
+                class="place-card"
+                draggable="true"
+                @dragstart="handleDragStart($event, place, 2)"
+              >
+                <img
+                  :src="place.firstImage1"
+                  :alt="place.title"
+                  class="place-image"
+                  loading="lazy"
+                />
+                <div class="place-info">
+                  <span
+                    :class="['place-type', getClassByType(place.contentTypeName)]"
+                  >
+                    {{ place.contentTypeName }}
+                  </span>
+                  <h3 class="place-name">{{ place.title }}</h3>
+                  <address class="place-address">{{ place.addr1 }}</address>
+                </div>
+                <button
+                  class="delete-button"
+                  @click="removePlace(2, place.contentId)"
+                  aria-label="Delete place"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+                  </svg>
+                </button>
+              </article>
       </section>
+      <section
+  class="day-section"
+  data-day="3"
+  @dragover="handleDragOver"
+  @dragleave="handleDragLeave"
+  @drop="(event) => handleDrop(event, 3)"
+  v-if="plan.tripDay === '2박 3일'"
+>
+  <h2 class="day-title">Day 3</h2>
+  <article
+                v-for="place in day3Places"
+                :key="place.contentId"
+                class="place-card"
+                draggable="true"
+                @dragstart="handleDragStart($event, place, 3)"
+              >
+                <img
+                  :src="place.firstImage1"
+                  :alt="place.title"
+                  class="place-image"
+                  loading="lazy"
+                />
+                <div class="place-info">
+                  <span
+                    :class="['place-type', getClassByType(place.contentTypeName)]"
+                  >
+                    {{ place.contentTypeName }}
+                  </span>
+                  <h3 class="place-name">{{ place.title }}</h3>
+                  <address class="place-address">{{ place.addr1 }}</address>
+                </div>
+                <button
+                  class="delete-button"
+                  @click="removePlace(3, place.contentId)"
+                  aria-label="Delete place"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+                  </svg>
+                </button>
+              </article>
+</section>
+
       </section>
       </main>
 
-      <main class="travel-summary" v-show="isSecondSummaryVisible">
+      <main class="second-travel-summary" v-show="isSecondSummaryVisible">
         <section class="content-wrapper">
           <div class="back-space second-summary-header">
             <div class="tabs-container">
@@ -281,49 +427,69 @@ const addPlace = () => {
 
           <section class="trip-details-second">
             <div class="search-container">
-              <input type="text" class="search-input" placeholder="여행지를 검색하세요..." />
-                <button class="search-icon-button">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                  </svg>
-                </button>
+              <input
+                type="text"
+                class="search-input"
+                placeholder="여행지를 검색하세요..."
+                v-model="searchQuery"
+              />
+              <button class="search-icon-button" @click="onSearchButtonClick">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                </svg>
+              </button>
             </div>
+
             <div class="radio-container">
               <label class="radio-label">
-                <input type="radio" name="category" value="여행지" />
+                <input type="radio" name="category" value="여행지" v-model="selectedCategory" />
                 <span>여행지</span>
               </label>
               <label class="radio-label">
-                <input type="radio" name="category" value="음식점" />
+                <input type="radio" name="category" value="음식점" v-model="selectedCategory" />
                 <span>음식점</span>
               </label>
               <label class="radio-label">
-                <input type="radio" name="category" value="숙박" />
+                <input type="radio" name="category" value="숙박" v-model="selectedCategory" />
                 <span>숙박</span>
+              </label>
+            </div>
+
+            <!-- 체크박스 추가 -->
+            <div class="checkbox-container">
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="isRegionChecked" checked />
+                <span>{{ plan.sidoName }}<span v-if="plan.gugunName"> ~ {{ plan.gugunName }}</span>에서 검색</span>
               </label>
             </div>
           </section>
 
 
           <section class="day-section">
-            <article v-for="place in searchResults"
-                     :key="place.id"
+            <article v-for="place in searchResults" 
+                     :key="place.contentId"
                      class="place-card"
                      draggable="true"
                      @dragstart="handleDragStart($event, place, 0)">
               <img
-                :src="place.image"
-                :alt="place.name"
+                :src="place.firstImage1"
+                :alt="place.title"
                 class="place-image"
                 loading="lazy"
               />
               <div class="place-info">
-                <span class="place-type">{{ place.type }}</span>
-                <h3 class="place-name">{{ place.name }}</h3>
-                <address class="place-address">{{ place.address }}</address>
+                <span 
+                    :class="['place-type', getClassByType(place.contentTypeName)]"
+                  >
+                    {{ place.contentTypeName }}
+                  </span>                <h3 class="place-name">{{ place.title }}</h3>
+                <address class="place-address">{{ place.addr1 }}</address>
               </div>
             </article>
             <hr class="divider" />
+            <!-- 더보기 버튼 -->
+            <button v-if="!isLoading" class="load-more-button" @click="loadMoreResults">더보기</button>
+            <div v-else class="loading-indicator">로딩 중...</div>
           </section>
       </section>
       </main>
@@ -332,6 +498,74 @@ const addPlace = () => {
 </template>
 
 <style scoped>
+.delete-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  color: #333; 
+  transition: color 0.3s ease;
+}
+
+.delete-button:hover {
+  color: #111; 
+}
+
+.delete-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.load-more-button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #09aa70;
+  border: 1px solid #09aa70;
+  background-color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.load-more-button:hover {
+  background-color: #f0f0f0;
+}
+
+.loading-indicator {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin: 10px 0;
+}
+
+.checkbox-container {
+  margin-top: 16px;
+  margin-left: 27px;
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  accent-color: #09aa70; /* 체크박스 색상 */
+  width: 16px;
+  height: 16px;
+}
+
 .day-section.drag-over-empty {
   border: 2px dashed #09aa70;
   background-color: rgba(9, 170, 112, 0.1);
@@ -552,16 +786,22 @@ const addPlace = () => {
   height: 100%;
 }
 
-.travel-summary {
-  max-width: 400px;
-  width: 100%;
+.first-travel-summary {
+  width: 400px;
   background-color: rgba(255, 255, 255, 0.9);
   overflow-y: auto;
   height: 100%;
   border-right: 1px solid #ddd;
   position: relative;
 }
-
+.second-travel-summary {
+  width: 400px;
+  background-color: rgba(255, 255, 255, 0.9);
+  overflow-y: auto;
+  height: 100%;
+  border-right: 1px solid #ddd;
+  position: relative;
+}
 .second {
   border-right: none; /* 두 번째 summary의 구분선 제거 */
 }
@@ -590,7 +830,7 @@ const addPlace = () => {
   right: -15px;
 }
 
-.travel-summary:last-child {
+.first-travel-summary:last-child {
   border-right: none; /* 마지막 summary의 구분선을 제거 */
 }
 
@@ -909,13 +1149,18 @@ const addPlace = () => {
   font-weight: 350;
   letter-spacing: -0.8px;
 }
-
 .place-image {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
+  width: 80px; /* 고정 너비 */
+  height: 80px; /* 고정 높이 */
+  min-width: 80px; /* 최소 너비 */
+  min-height: 80px; /* 최소 높이 */
+  border-radius: 50%; /* 둥근 이미지 유지 */
+  object-fit: cover; /* 이미지를 잘라내면서 고정된 크기에 맞춤 */
+  object-position: center; /* 이미지의 중앙을 기준으로 잘라냄 */
+  background-color: #f0f0f0; /* 빈 공간에 색상 추가 (필요에 따라 수정 가능) */
 }
+
+
 
 .place-info {
   display: flex;
@@ -976,4 +1221,20 @@ const addPlace = () => {
   font-size: 14px;
   font-weight: 350;
 }
+.type-travel {
+  background-color: #14a4b0; /* 여행지 색상 */
+}
+
+.type-restaurant {
+  background-color: #ff7f50; /* 음식점 색상 */
+}
+
+.type-hotel {
+  background-color: #8a2be2; /* 숙박 색상 */
+}
+
+.type-default {
+  background-color: #ccc; /* 기본 색상 */
+}
+
 </style>

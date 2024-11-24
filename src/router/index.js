@@ -25,7 +25,11 @@ const router = createRouter({
           name:"trip-info",
           component: () => import("@/components/trip/TripSearch.vue"),
         }
-
+        ,{
+          path:"newplan",
+          name:"trip-newplan",
+          component: () => import("@/components/trip/TripNewPlan.vue"),
+        }
       ]
     },
     {
@@ -67,7 +71,7 @@ const router = createRouter({
       props: true, // contentId를 props로 전달
     },
     {
-      path:'/plan/making',
+      path:'/plan/making/:planId',
       name: 'plan-making',
       component:TheMakingView
     }

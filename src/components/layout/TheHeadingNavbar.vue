@@ -37,6 +37,7 @@ export default {
   align-items: center;
   padding: 0 360px 0px;
   height: 90px;
+  background-color: white;
 }
 
 .logo-link {
